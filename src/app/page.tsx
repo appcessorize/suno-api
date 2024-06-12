@@ -14,7 +14,7 @@ export default function Home() {
       <div className="h-screen w-full bg-red-100 flex items-center justify-center snap-start">
         <div className="prose">
           <p>Yo man cookie</p>
-          <h2>tailwind </h2>
+          <h2>tailwind !</h2>
           <Song />
         </div>
       </div>
