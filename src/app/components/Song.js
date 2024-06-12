@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import axios from "axios";
 
@@ -12,7 +14,7 @@ export default function Song() {
     setSongUrl(null);
 
     try {
-      const response = await axios.post("/api/generate-song");
+      const response = await axios.post("/api/generate_song");
       const songData = response.data;
 
       // Assuming songData contains an array with song details
