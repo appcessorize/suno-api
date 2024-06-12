@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Inter } from "next/font/google";
 // import TodoList from "@/components/TodoList";
 import TodoList from "../app/components/TodoList";
+import Song from "../app/components/Song";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
         <div className="prose">
           <p>Yo man cookie</p>
           <h2>tailwind </h2>
+          <Song />
           <button onClick={() => console.log("clicked")}>Click me</button>
         </div>
       </div>
