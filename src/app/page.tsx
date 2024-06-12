@@ -16,7 +16,6 @@ export default function Home() {
           <p>Yo man cookie</p>
           <h2>tailwind </h2>
           <Song />
-          <button onClick={() => console.log("clicked")}>Click me</button>
         </div>
       </div>
       <div className="h-screen w-full bg-black flex items-center flex-col justify-center snap-start bg-[url('https://c4.wallpaperflare.com/wallpaper/914/522/554/david-bowie-musician-smoking-wallpaper-preview.jpg')] bg-cover">

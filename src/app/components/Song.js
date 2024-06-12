@@ -42,7 +42,12 @@ export default function Song() {
   return (
     <div className="container">
       <h1>Suno AI Music Generator</h1>
-      <button onClick={generateSong} disabled={loading}>
+
+      <button
+        onClick={generateSong}
+        disabled={loading}
+        className="bg-red-500 text-white rounded p-6 shadow"
+      >
         {loading ? "Generating..." : "Generate Hip-Hop Song"}
       </button>
       {loading && <div className="spinner">Loading...</div>}
