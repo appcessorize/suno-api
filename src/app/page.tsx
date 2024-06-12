@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
-// import TodoList from "@/components/TodoList";
+import TodoList from "@/components/TodoList";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -51,7 +51,7 @@ export default function Home() {
         </p>
       </div>
       <div className=" w-full bg-black flex  items-center justify-center snap-start">
-        {/* <TodoList /> */}
+        <TodoList />
       </div>
       <div className="h-screen w-full bg-red-100 flex  items-center justify-center snap-start">
         <p>hi</p>
