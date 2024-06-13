@@ -1,29 +1,82 @@
-import axios from "axios";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { sunoApi } from "@/lib/SunoApi";
+import { corsHeaders } from "@/lib/utils";
 
-export async function POST(request: Request) {
-  const payload = {
-    prompt:
-      "A hip-hop song about the months of the year, with catchy lyrics and a groovy beat.",
-    make_instrumental: false,
-    wait_audio: false,
-  };
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
-  try {
-    const response = await axios.post(
-      "https://suno-api-kappa-topaz.vercel.app/api/generate",
-      payload,
-      {
-        headers: { "Content-Type": "application/json" },
+export async function POST(req: NextRequest) {
+  if (req.method === "POST") {
+    try {
+      const body = await req.json();
+      const { prompt, tags, title, make_instrumental, wait_audio } = body;
+      if (!prompt || !tags || !title) {
+        return new NextResponse(
+          JSON.stringify({ error: "Prompt, tags, and title are required" }),
+          {
+            status: 400,
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
+          }
+        );
       }
-    );
-
-    const songData = response.data;
-    return NextResponse.json(songData);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Error generating song" },
-      { status: 500 }
-    );
+      const audioInfo = await (
+        await sunoApi
+      ).custom_generate(
+        prompt,
+        tags,
+        title,
+        make_instrumental == true,
+        wait_audio == true
+      );
+      return new NextResponse(JSON.stringify(audioInfo), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    } catch (error: any) {
+      console.error("Error generating custom audio:", error);
+      if (error.response && error.response.status === 402) {
+        return new NextResponse(
+          JSON.stringify({ error: error.response.data.detail }),
+          {
+            status: 402,
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
+          }
+        );
+      }
+      return new NextResponse(
+        JSON.stringify({ error: "Internal server error" }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    }
+  } else {
+    return new NextResponse("Method Not Allowed", {
+      headers: {
+        Allow: "POST",
+        ...corsHeaders,
+      },
+      status: 405,
+    });
   }
+}
+
+export async function OPTIONS(request: Request) {
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
 }

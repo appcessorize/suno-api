@@ -32,7 +32,14 @@ export default function CustomSong() {
       setSongUrl(songData.audio_url);
       setLoading(false);
     } catch (error) {
-      setError("Failed to generate song.");
+      console.error(
+        "Error generating song:",
+        error.response || error.message || error
+      );
+      setError(
+        "Failed to generate song. " +
+          (error.response?.data?.error || error.message)
+      );
       setLoading(false);
     }
   };
