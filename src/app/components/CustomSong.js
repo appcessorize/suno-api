@@ -1,27 +1,7 @@
+"use client";
+
 import { useState } from "react";
-
-async function generateCustomAudio(data) {
-  try {
-    const response = await fetch("/api/custom_generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Something went wrong");
-    }
-
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.error("Error generating custom audio:", error);
-    throw error;
-  }
-}
+import axios from "axios";
 
 export default function CustomSong() {
   const [prompt, setPrompt] = useState("");
@@ -29,14 +9,14 @@ export default function CustomSong() {
   const [title, setTitle] = useState("");
   const [makeInstrumental, setMakeInstrumental] = useState(false);
   const [waitAudio, setWaitAudio] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [songUrl, setSongUrl] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleGenerate = async () => {
-    setLoading(true); // Set loading to true when request starts
+  const generateSong = async () => {
+    setLoading(true);
     setError(null);
-    setResult(null);
+    setSongUrl(null);
 
     try {
       const data = {
@@ -47,92 +27,119 @@ export default function CustomSong() {
         wait_audio: waitAudio,
       };
 
-      const response = await generateCustomAudio(data);
-      setResult(response);
-      setError(null);
-    } catch (err) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false); // Set loading to false when request finishes
+      const response = await axios.post("/api/generate_song", data);
+      const songData = response.data;
+
+      // Assuming songData contains an array with song details
+      const songId = songData[0].id;
+
+      // Polling to get the song URL
+      const interval = setInterval(async () => {
+        const result = await axios.get(
+          `https://suno-api-kappa-topaz.vercel.app/api/get?ids=${songId}`
+        );
+        const songInfo = result.data;
+
+        if (songInfo[0].status === "streaming") {
+          setSongUrl(songInfo[0].audio_url);
+          clearInterval(interval);
+          setLoading(false);
+        }
+      }, 5000);
+    } catch (error) {
+      setError("Failed to generate song.");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col justify-center gap-6 m-8">
-      <input
-        className="p-2 rounded"
-        type="text"
-        placeholder="Prompt"
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-      />
-      <input
-        className="p-2 rounded"
-        type="text"
-        placeholder="Tags (comma separated)"
-        value={tags}
-        onChange={(e) => setTags(e.target.value)}
-      />
-      <input
-        className="p-2 rounded"
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <label>
-        <input
-          type="checkbox"
-          checked={makeInstrumental}
-          onChange={(e) => setMakeInstrumental(e.target.checked)}
-        />
-        Make Instrumental
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          checked={waitAudio}
-          onChange={(e) => setWaitAudio(e.target.checked)}
-        />
-        Wait for Audio
-      </label>
-      <button
-        onClick={handleGenerate}
-        className="bg-red-500 text-white p-4 rounded shadow flex justify-center items-center"
-        disabled={loading}
-      >
-        {loading ? (
-          <svg
-            className="animate-spin h-5 w-5 text-white"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zM2 12a10 10 0 0110-10v4a6 6 0 00-6 6H2z"
-            ></path>
-          </svg>
-        ) : (
-          "Generate Audio"
-        )}
-      </button>
+    <div className="container">
+      <h1>Suno AI Music Generator</h1>
 
-      {error && <div>Error: {error}</div>}
-      {result && (
+      <div className="form">
+        <input
+          type="text"
+          placeholder="Prompt"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          className="input"
+        />
+        <input
+          type="text"
+          placeholder="Tags (comma separated)"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          className="input"
+        />
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="input"
+        />
+        <label>
+          <input
+            type="checkbox"
+            checked={makeInstrumental}
+            onChange={(e) => setMakeInstrumental(e.target.checked)}
+          />
+          Make Instrumental
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={waitAudio}
+            onChange={(e) => setWaitAudio(e.target.checked)}
+          />
+          Wait for Audio
+        </label>
+        <button
+          onClick={generateSong}
+          disabled={loading}
+          className="bg-red-500 text-white rounded p-6 shadow"
+        >
+          {loading ? "Generating..." : "Generate Custom Song"}
+        </button>
+      </div>
+
+      {loading && <div className="spinner">Loading...</div>}
+      {error && <div className="error">{error}</div>}
+      {songUrl && (
         <div>
-          Audio generated: <audio controls src={result.audioUrl}></audio>
+          <h2>Your Song:</h2>
+          <audio controls>
+            <source src={songUrl} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
         </div>
       )}
+
+      <style jsx>{`
+        .container {
+          text-align: center;
+          margin-top: 50px;
+        }
+        .form {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
+        .input {
+          padding: 10px;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+          width: 300px;
+        }
+        .spinner {
+          margin: 20px 0;
+        }
+        .error {
+          color: red;
+          margin: 20px 0;
+        }
+      `}</style>
     </div>
   );
 }
