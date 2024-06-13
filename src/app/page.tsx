@@ -12,11 +12,9 @@ export default function Home() {
     <main
       className={`flex min-h-screen flex-col snap-y overflow-y-scroll snap-mandatory`}
     >
-      <div className="h-screen w-full bg-red-100 flex items-center justify-center snap-start">
+      <div className="min-h-screen w-full bg-red-100 flex items-center justify-center snap-start">
         <div className="prose">
-          <p>Yo man cookie</p>
-          <h2>tailwind !</h2>
-          <Song />
+          {/* <Song /> */}
 
           <div>
             <CustomSong />

@@ -7,8 +7,6 @@ export default function CustomSong() {
   const [prompt, setPrompt] = useState("");
   const [tags, setTags] = useState("");
   const [title, setTitle] = useState("");
-  const [makeInstrumental, setMakeInstrumental] = useState(false);
-  const [waitAudio, setWaitAudio] = useState(false);
   const [loading, setLoading] = useState(false);
   const [songUrl, setSongUrl] = useState(null);
   const [error, setError] = useState(null);
@@ -23,29 +21,16 @@ export default function CustomSong() {
         prompt,
         tags: tags.split(",").map((tag) => tag.trim()),
         title,
-        make_instrumental: makeInstrumental,
-        wait_audio: waitAudio,
+        make_instrumental: false,
+        wait_audio: true,
       };
 
       const response = await axios.post("/api/generate_song", data);
       const songData = response.data;
 
-      // Assuming songData contains an array with song details
-      const songId = songData[0].id;
-
-      // Polling to get the song URL
-      const interval = setInterval(async () => {
-        const result = await axios.get(
-          `https://suno-api-kappa-topaz.vercel.app/api/get?ids=${songId}`
-        );
-        const songInfo = result.data;
-
-        if (songInfo[0].status === "streaming") {
-          setSongUrl(songInfo[0].audio_url);
-          clearInterval(interval);
-          setLoading(false);
-        }
-      }, 5000);
+      // Assuming songData contains the song details directly
+      setSongUrl(songData.audio_url);
+      setLoading(false);
     } catch (error) {
       setError("Failed to generate song.");
       setLoading(false);
@@ -78,22 +63,6 @@ export default function CustomSong() {
           onChange={(e) => setTitle(e.target.value)}
           className="input"
         />
-        <label>
-          <input
-            type="checkbox"
-            checked={makeInstrumental}
-            onChange={(e) => setMakeInstrumental(e.target.checked)}
-          />
-          Make Instrumental
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={waitAudio}
-            onChange={(e) => setWaitAudio(e.target.checked)}
-          />
-          Wait for Audio
-        </label>
         <button
           onClick={generateSong}
           disabled={loading}
@@ -107,7 +76,7 @@ export default function CustomSong() {
       {error && <div className="error">{error}</div>}
       {songUrl && (
         <div>
-          <h2>Your Song:</h2>
+          <h2>{title}</h2>
           <audio controls>
             <source src={songUrl} type="audio/mpeg" />
             Your browser does not support the audio element.
