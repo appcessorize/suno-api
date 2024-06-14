@@ -14,6 +14,7 @@ export default function Song() {
     setSongUrl(null);
 
     try {
+      console.log("trying to gen song...");
       const response = await axios.post("/api/generate_song");
       const songData = response.data;
 
@@ -34,7 +35,7 @@ export default function Song() {
         }
       }, 5000);
     } catch (error) {
-      setError("Failed to generate song.");
+      setError("Failed to generate song.", error);
       setLoading(false);
     }
   };
