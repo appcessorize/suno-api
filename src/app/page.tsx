@@ -14,7 +14,7 @@ export default function Home() {
     >
       <div className="min-h-screen w-full bg-red-100 flex items-center justify-center snap-start">
         <div className="prose">
-          {/* <Song /> */}
+          <Song />
 
           <div>
             <CustomSong />
