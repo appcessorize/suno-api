@@ -14,7 +14,7 @@ export default function Song() {
     setSongUrl(null);
 
     try {
-      console.log("trying to gen song...");
+      console.log("trying to gen song!...");
       const response = await axios.post("/api/generate_song");
       const songData = response.data;
 
